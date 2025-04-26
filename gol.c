@@ -1,35 +1,9 @@
 // gol.c
-// Every cell interacts with its eight neighbours, which are the cells that are
-// horizontally, vertically, or diagonally adjacent
+// https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 //
-// Any live cell with fewer than two live neighbours dies, as if by
-// underpopulation. Any live cell with two or three live neighbours lives on to
-// the next generation. Any live cell with more than three live neighbours dies,
-// as if by overpopulation. Any dead cell with exactly three live neighbours
-// becomes a live cell, as if by reproduction.
-//
-// (-1,-1) (-1,0) (-1,1)
-// (0,-1) (0,0) (0,1)
-// (1,-1) (1,0) (1,1)
-
-// TODO: modularize and add documentation
 
 // includes
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-
-// defines
-#define BUFFER_HEIGHT 16 // rows
-#define BUFFER_WIDTH 16  // cols
-
-#define MOD(a, b) (a % b + b) % b
-
-#define ANSI_CLEAR_SCREEN printf("\x1b[1;1H\e[2J")
-#define ANSI_CURSOR_UP(n) "\x1b[" #n "A"
-#define ANSI_CURSOR_BACK(n) "\x1b[" #n "D"
-#define RESET_CURSOR(x, y) printf(ANSI_CURSOR_UP(x) ANSI_CURSOR_BACK(y))
+#include "gol.h"
 
 int buffer[BUFFER_HEIGHT][BUFFER_WIDTH] = {0};
 int next_state_buffer[BUFFER_HEIGHT][BUFFER_WIDTH] = {0};
@@ -52,9 +26,9 @@ void display_buffer(void) {
     for (y = 0; y < BUFFER_HEIGHT; y++) {
         for (x = 0; x < BUFFER_WIDTH; x++) {
             if (buffer[y][x])
-                putchar('#');
+                putchar('X');
             else
-                putchar('.');
+                putchar(' ');
         }
         putchar('\n');
     }
@@ -110,28 +84,96 @@ void create_next_state(void) {
 }
 
 // still lifes
+
+// block = [(0, 0), (0, 1), (1, 0), (1, 1)]
 void block(void) {
-    buffer[BUFFER_HEIGHT / 2][BUFFER_WIDTH / 2] = 1;
-    buffer[BUFFER_HEIGHT / 2][BUFFER_WIDTH / 2 - 1] = 1;
-    buffer[BUFFER_HEIGHT / 2 - 1][BUFFER_WIDTH / 2] = 1;
-    buffer[BUFFER_HEIGHT / 2 - 1][BUFFER_WIDTH / 2 - 1] = 1;
+    buffer[0][0] = 1;
+    buffer[0][1] = 1;
+    buffer[1][0] = 1;
+    buffer[1][1] = 1;
 }
 
+// beehive = [(1, 0), (0, 1), (0, 2), (1, 3), (2, 1), (2, 2)]
 void bee_hive(void) {
-    buffer[BUFFER_HEIGHT / 2][BUFFER_WIDTH / 2] = 1;
-    buffer[BUFFER_HEIGHT / 2][BUFFER_WIDTH / 2 - 1] = 1;
-    buffer[BUFFER_HEIGHT / 2 - 1][BUFFER_WIDTH / 2 + 1] = 1;
-    buffer[BUFFER_HEIGHT / 2 - 1][BUFFER_WIDTH / 2 - 1 - 1] = 1;
-    buffer[BUFFER_HEIGHT / 2 - 2][BUFFER_WIDTH / 2] = 1;
-    buffer[BUFFER_HEIGHT / 2 - 2][BUFFER_WIDTH / 2 - 1] = 1;
+    buffer[1][0] = 1;
+    buffer[0][1] = 1;
+    buffer[0][2] = 1;
+    buffer[1][3] = 1;
+    buffer[2][1] = 1;
+    buffer[2][2] = 1;
 }
+
+// loaf = [(1, 0), (0, 1), (0, 2), (1, 3), (2, 1), (2, 3), (3, 2)]
+// boat = [(0, 0), (0, 1), (1, 0), (1, 2), (2, 1)]
+// tub = [(0, 1), (1, 0), (1, 2), (2, 1)]
 
 // oscillators
+// blinker = [(0, 1), (1, 1), (2, 1)]  # Phase 1 (vertical)
+// toad = [(1, 1), (1, 2), (1, 3), (2, 0), (2, 1), (2, 2)]  # Phase 1
+// beacon = [(0, 0), (0, 1), (1, 0), (2, 3), (3, 2), (3, 3)]  # Phase 1
+// pulsar = [(2,0),(3,0),(4,0), (0,2),(0,3),(0,4), (5,2),(5,3),(5,4),
+// (2,5),(3,5),(4,5)]  # One quadrant pentadecathlon = [(1,0), (1,1), ...,
+// (1,9)]  # Horizontal line of 10 cells
+//
+// For Pulsar, mirror the coordinates symmetrically in all four quadrants.
+// Pentadecathlon requires a larger grid (at least 20×20 to observe full
+// evolution).
+
 // spaceships
+// glider = [(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+// lwss = [(0, 1), (0, 4), (1, 0), (2, 0), (2, 4), (3, 0), (3, 1), (3, 2), (3,
+// 3)]
+// mwss = [(0, 2), (0, 5), (1, 0), (2, 0), (2, 5), (3, 0), (3, 1), (3, 2),
+// (3, 3), (3, 4)]
+// hwss = [(0, 2), (0, 6), (1, 0), (2, 0), (2, 6), (3, 0), (3, 1), (3, 2), (3,
+// 3), (3, 4), (3, 5)]
+//
+// Directionality: Flip/rotate coordinates to change movement direction (e.g.,
+// invert x/y for vertical movement).
+// Grid Size: Ensure the grid is large enough to avoid boundaries (e.g., 50×50
+// for HWSS). Period: All spaceships listed here have a period of 4 (they return
+// to their original shape every 4 steps, shifted in space). Visualization Tips:
+// Gliders are often used as "signals" in Game of Life computers.
+// LWSS/MWSS/HWSS emit "glider streams" when collided with other patterns.
+
+// Methuselahs
+
+// r_pentomino = [(0,1),(0,2), (1,0),(1,1), (2,1)]
+void r_pentomino(void) {
+    buffer[0][1] = 1;
+    buffer[0][2] = 1;
+    buffer[1][0] = 1;
+    buffer[1][1] = 1;
+    buffer[2][1] = 1;
+}
+
+// diehard = [(0,6), (1,0),(1,1), (2,1),(2,5),(2,6),(2,7)]
+void diehard(void) {
+    buffer[0][6] = 1;
+    buffer[1][0] = 1;
+    buffer[1][1] = 1;
+    buffer[2][1] = 1;
+    buffer[2][5] = 1;
+    buffer[2][6] = 1;
+    buffer[2][7] = 1;
+}
+
+// acorn = [(0,1), (1,3), (2,0),(2,1),(2,4),(2,5),(2,6)]
+void acorn(void) {
+    buffer[0][1] = 1;
+    buffer[1][3] = 1;
+    buffer[2][0] = 1;
+    buffer[2][1] = 1;
+    buffer[2][4] = 1;
+    buffer[2][5] = 1;
+    buffer[2][6] = 1;
+}
 
 int main(int argc, char **argv) {
     ANSI_CLEAR_SCREEN;
-    bee_hive();
+    // r_pentomino();
+    // diehard();
+    acorn();
     while (1) {
         display_buffer();
         create_next_state();
