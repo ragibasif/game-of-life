@@ -1,6 +1,7 @@
 // gol.h
 
 // includes
+#include "ANSI.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,10 +16,8 @@
 
 #define MOD(a, b) (a % b + b) % b
 
-#define ANSI_CLEAR_SCREEN printf("\x1b[1;1H\e[2J")
-#define ANSI_CURSOR_UP(n) "\x1b[" #n "A"
-#define ANSI_CURSOR_BACK(n) "\x1b[" #n "D"
-#define RESET_CURSOR(x, y) printf(ANSI_CURSOR_UP(x) ANSI_CURSOR_BACK(y))
+// #define ANSI_CLEAR_SCREEN printf("\x1b[1;1H\e[2J")
+// #define ANSI_RESET_CURSOR(x, y) printf(ANSI_CURSOR_UP(x) ANSI_CURSOR_BACK(y))
 
 bool check_empty_buffer(void);
 

@@ -170,15 +170,17 @@ void acorn(void) {
 }
 
 int main(int argc, char **argv) {
-    ANSI_CLEAR_SCREEN;
-    // r_pentomino();
-    // diehard();
+    printf(ANSI_SCREEN_CLEAR);
     acorn();
     while (1) {
+        printf(ANSI_CURSOR_HIDE);
+        printf(ANSI_CURSOR_SAVE);
         display_buffer();
         create_next_state();
         memcpy(buffer, next_state_buffer, sizeof(buffer));
-        RESET_CURSOR(BUFFER_HEIGHT, BUFFER_WIDTH);
+        printf(ANSI_CURSOR_RESTORE);
+        // FIX: cursor should show if CTRL-C is pressed
+        printf(ANSI_CURSOR_SHOW);
         usleep(100 * 1000);
         if (check_empty_buffer()) {
             display_buffer();

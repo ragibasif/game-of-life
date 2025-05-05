@@ -20,14 +20,14 @@ Make sure you have `gcc` and `make` installed.
 make
 ```
 
-### 🧹 Clean build files
-
-```bash
-make clean
-```
-
 ### 🏃 Run the executable
 
 ```bash
 ./gol.c
+```
+
+### 🧹 Clean build files
+
+```bash
+make clean
 ```
