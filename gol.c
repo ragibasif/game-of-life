@@ -3,7 +3,20 @@
 //
 
 // includes
-#include "gol.h"
+
+#include "ANSI.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#define BUFFER_HEIGHT 40 // rows
+#define BUFFER_WIDTH 40  // cols
+
+// #define ALIVE 1
+// #define DEAD 0
+
+#define MOD(a, b) (a % b + b) % b
 
 int buffer[BUFFER_HEIGHT][BUFFER_WIDTH] = {0};
 int next_state_buffer[BUFFER_HEIGHT][BUFFER_WIDTH] = {0};
