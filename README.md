@@ -2,31 +2,31 @@
 
 [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)
 
-## 🛠️ Usage
+## Usage
 
-### 💻 Installation
+### Installation
 
 Clone the repository.
 
 ```bash
-git clone git@github.com:ragibasif/gol.c.git
+git clone git@github.com:ragibasif/game-of-life.git
 ```
 
 Make sure you have `gcc` and `make` installed.
 
-### 🔧 Build the project
+### Build the project
 
 ```bash
 make
 ```
 
-### 🏃 Run the executable
+### Run the executable
 
 ```bash
-./gol.c
+./gol
 ```
 
-### 🧹 Clean build files
+### Clean build files
 
 ```bash
 make clean
